@@ -3,6 +3,7 @@ import { ArrowLeft, Share2, FileText, Download, Copy, Check } from 'lucide-react
 import Card from './Card'
 import Button from './Button'
 import { InteractionContext } from '../contexts/InteractionContext'
+import { exportSummaryToPDF } from '../services/pdfExport'
 
 const CaseSummary = ({ onBack }) => {
   const { interactions, generateSummary } = useContext(InteractionContext)
@@ -43,6 +44,17 @@ const CaseSummary = ({ onBack }) => {
       }
     } catch (error) {
       console.error('Failed to share:', error)
+    }
+  }
+
+  const handleExportPDF = async () => {
+    if (!generatedSummary || !selectedInteraction) return
+    
+    try {
+      await exportSummaryToPDF(generatedSummary, selectedInteraction)
+    } catch (error) {
+      console.error('Failed to export PDF:', error)
+      alert('Failed to export PDF. Please try again.')
     }
   }
 
@@ -131,6 +143,9 @@ const CaseSummary = ({ onBack }) => {
             <div className="flex gap-2">
               <Button variant="iconOnly" onClick={copyToClipboard}>
                 {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+              </Button>
+              <Button variant="iconOnly" onClick={handleExportPDF}>
+                <Download className="w-4 h-4" />
               </Button>
               <Button variant="iconOnly" onClick={handleShare}>
                 <Share2 className="w-4 h-4" />

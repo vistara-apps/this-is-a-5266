@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react'
+import { getStateFromCoordinates } from '../data/stateMapping'
 
 export const LocationContext = createContext()
 
@@ -7,25 +8,7 @@ export const LocationProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  // State mapping for US states (simplified version)
-  const getStateFromCoordinates = (latitude, longitude) => {
-    // This is a simplified implementation
-    // In a real app, you'd use a geocoding service
-    const states = {
-      'CA': { minLat: 32.5, maxLat: 42.0, minLng: -124.4, maxLng: -114.1 },
-      'NY': { minLat: 40.5, maxLat: 45.0, minLng: -79.8, maxLng: -71.8 },
-      'TX': { minLat: 25.8, maxLat: 36.5, minLng: -106.6, maxLng: -93.5 },
-      'FL': { minLat: 24.4, maxLat: 31.0, minLng: -87.6, maxLng: -80.0 },
-    }
-
-    for (const [state, bounds] of Object.entries(states)) {
-      if (latitude >= bounds.minLat && latitude <= bounds.maxLat &&
-          longitude >= bounds.minLng && longitude <= bounds.maxLng) {
-        return state
-      }
-    }
-    return 'Unknown'
-  }
+  // Enhanced state detection with comprehensive mapping
 
   const requestLocation = () => {
     if (!navigator.geolocation) {
@@ -39,11 +22,12 @@ export const LocationProvider = ({ children }) => {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords
-        const state = getStateFromCoordinates(latitude, longitude)
+        const stateInfo = getStateFromCoordinates(latitude, longitude)
         
         setLocation({
           coordinates: { latitude, longitude },
-          state,
+          state: stateInfo?.code || 'Unknown',
+          stateInfo: stateInfo,
           timestamp: new Date().toISOString()
         })
         setIsLoading(false)
